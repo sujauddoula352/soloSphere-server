@@ -1,19 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 9000;
 const app = express();
 const corsOptions = {
-  origin: ["http://localhost:5173/"],
+  origin: ["http://localhost:5173"],
   credentials: true,
   optionSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
 app.use(express.json());
-const uri =
-  "mongodb+srv://soloSphere:7AZ9jauEf7Q437Tn@cluster0.cpjdd6o.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const uri = `mongodb+srv://${process.env.DB_UESR}:${process.env.DB_PASS}@cluster0.umxrs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -23,8 +21,26 @@ const client = new MongoClient(uri, {
 });
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-
+    const jobsCollection = client.db("soloSphere").collection("jobs");
+    const bidsCollection = client.db("soloSphere").collection("bids");
+    // Get all data for DB
+    app.get("/jobs", async (req, res) => {
+      const result = await jobsCollection.find().toArray();
+      res.send(result);
+    });
+    // Get a single job data from db using job id
+    app.get("/job/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await jobsCollection.findOne(query);
+      res.send(result);
+    });
+    // Save in bids data in db
+    app.post("/bid", async (req, res) => {
+      const bidData = req.body;
+      const result = await bidsCollection.insertOne(bidData);
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
