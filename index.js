@@ -28,6 +28,12 @@ async function run() {
       const result = await jobsCollection.find().toArray();
       res.send(result);
     });
+    // Save in bids data in db
+    app.post("/job", async (req, res) => {
+      const bidData = req.body;
+      const result = await jobsCollection.insertOne(bidData);
+      res.send(result);
+    });
     // Get a single job data from db using job id
     app.get("/job/:id", async (req, res) => {
       const id = req.params.id;
