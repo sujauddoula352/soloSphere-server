@@ -28,10 +28,10 @@ async function run() {
       const result = await jobsCollection.find().toArray();
       res.send(result);
     });
-    // Save in bids data in db
+    // Save in jobs data in db
     app.post("/job", async (req, res) => {
-      const bidData = req.body;
-      const result = await jobsCollection.insertOne(bidData);
+      const jobData = req.body;
+      const result = await jobsCollection.insertOne(jobData);
       res.send(result);
     });
     // Get a single job data from db using job id
@@ -41,6 +41,22 @@ async function run() {
       const result = await jobsCollection.findOne(query);
       res.send(result);
     });
+
+    // Get a all jobs posted by specifie user
+    app.get("/jobs/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "buyer.email": email };
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    });
+    // Get a all jobs posted by specifie user
+    app.delete("/job/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await jobsCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // Save in bids data in db
     app.post("/bid", async (req, res) => {
       const bidData = req.body;
