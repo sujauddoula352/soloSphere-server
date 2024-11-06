@@ -49,13 +49,29 @@ async function run() {
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
     });
-    // Get a all jobs posted by specifie user
+    // Get a all bids for a user by  email for db
+    app.get("/my-bids/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await bidsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    //  get all bids requests from db for job own
+    app.get("/bid-requests/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "buyer.email": email };
+      const result = await bidsCollection.find(query).toArray();
+      res.send(result);
+    });
+    // Get  all jobs delete by specifie user
     app.delete("/job/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await jobsCollection.deleteOne(query);
       res.send(result);
     });
+    // Retrieves job ID from URL parameters and updated job data from request body
     app.put("/job/:id", async (req, res) => {
       const id = req.params.id;
       const jobData = req.body;
@@ -69,6 +85,7 @@ async function run() {
       const result = await jobsCollection.updateOne(query, updateDoc, options);
       res.send(result);
     });
+
     // Save in bids data in db
     app.post("/bid", async (req, res) => {
       const bidData = req.body;
