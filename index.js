@@ -48,23 +48,7 @@ async function run() {
       const query = { "buyer.email": email };
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
-    });
-    // Get a all bids for a user by  email for db
-    app.get("/my-bids/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const result = await bidsCollection.find(query).toArray();
-      res.send(result);
-    });
-
-    //  get all bids requests from db for job own
-    app.get("/bid-requests/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { "buyer.email": email };
-      const result = await bidsCollection.find(query).toArray();
-      res.send(result);
-    });
-    // Get  all jobs delete by specifie user
+    }); // Get  all jobs delete by specifie user
     app.delete("/job/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -92,6 +76,32 @@ async function run() {
       const result = await bidsCollection.insertOne(bidData);
       res.send(result);
     });
+    // get all bids for a user by email from db
+    app.get("/my-bids/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const result = await bidsCollection.find(query).toArray();
+      res.send(result);
+    });
+    //  get all bids requests from db for job own
+    app.get("/bid-requests/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "buyer.email": email };
+      const result = await bidsCollection.find(query).toArray();
+      res.send(result);
+    });
+    // Update Bid status
+    app.patch("/bid/:id", async (req, res) => {
+      const id = req.params.id;
+      const status = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: status,
+      };
+      const result = await jobsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
