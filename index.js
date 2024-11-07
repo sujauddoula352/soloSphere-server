@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 9000;
@@ -23,6 +25,32 @@ async function run() {
   try {
     const jobsCollection = client.db("soloSphere").collection("jobs");
     const bidsCollection = client.db("soloSphere").collection("bids");
+
+    // JWT ganerate
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKENT_SERVER, {
+        expiresIn: "7d",
+      });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
+    app.get("/logout", (req, res) => {
+      res
+        .clearCookie("token", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+          maxAge: 0,
+        })
+        .send({ success: true, message: "Logout successful" });
+    });
+
     // Get all data for DB
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().toArray();
@@ -95,10 +123,8 @@ async function run() {
       const id = req.params.id;
       const status = req.body;
       const query = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: status,
-      };
-      const result = await jobsCollection.updateOne(query, updateDoc);
+      const updateDoc = { $set: status };
+      const result = await bidsCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
